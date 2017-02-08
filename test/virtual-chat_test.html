@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>virtual-chat test</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../virtual-chat.html">
+  </head>
+  <body>
+    <test-fixture id="basic">
+      <template>
+        <virtual-chat></virtual-chat>
+      </template>
+    </test-fixture>
+
+    <script>
+      suite('virtual-chat', function() {
+        test('instantiating the element works', function() {
+          var element = fixture('basic');
+          assert.equal(element.is, 'virtual-chat');
+        });
+      });
+    </script>
+  </body>
+</html>
