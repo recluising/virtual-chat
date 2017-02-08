@@ -14,7 +14,8 @@ Chat component that simulates several people is talking
         display: block;
       }
     </style>
-    <h2>Hello [[prop1]]</h2>
+    <h1>[[chatName]]</h1>
+
   </template>
 
   <script>
@@ -23,10 +24,33 @@ Chat component that simulates several people is talking
       is: 'virtual-chat',
 
       properties: {
-        prop1: {
+        /**
+         * Name of the chat
+         */
+        chatName: {
           type: String,
           value: 'virtual-chat',
         },
+        /**
+         * Conversation to configure component.
+         *
+         * @type {{user: Array<{message: String, time: Number}>}}
+         */
+        script:{
+          type: Object,
+          value: function (){
+            return {}
+          }
+        },
+        /**
+         * Array of users
+         *
+         * @type Array<String>
+         */
+        users:{
+          type: Array,
+          computed: '_extractUsers(script)'
+        }
       },
 
     });
