@@ -1,58 +1,78 @@
 <link rel="import" href="../polymer/polymer.html">
-
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
 <!--
 `virtual-chat`
 Chat component that simulates several people is talking
 
 @demo demo/index.html 
 -->
-
 <dom-module id="virtual-chat">
-  <template>
-    <style>
-      :host {
-        display: block;
-      }
-    </style>
-    <h1>[[chatName]]</h1>
+	<template>
+		<style is="custom-style">
+			.flex-horizontal {
+				@apply(--layout-horizontal);
+			}
+			
+			.flexchild {
+				@apply(--layout-flex);
+			}
 
-  </template>
+		</style>
+		<header>
+			<h2>[[name]]</h2>
+		</header>
+		<div class="container flex-horizontal">
+			<div>
+				<paper-listbox>
+					<template is="dom-repeat" items="[[_users]]" as="user">
+						<paper-item>[[user]]</paper-item>
+					</template>
+				</paper-listbox>
+			</div>
+			<div class="flexchild">two (flex)</div>
+			<div>three</div>
+		</div>
+	</template>
+	<script>
+		Polymer({
 
-  <script>
-    Polymer({
+			is: 'virtual-chat',
 
-      is: 'virtual-chat',
+			properties: {
+				/**
+				 * Name of the chat
+				 */
+				name: {
+					type: String
+				},
+				/**
+				 * Conversation to configure component.
+				 *
+				 * @type {{user: Array<{message: String, time: Number}>}}
+				 */
+				script: {
+					type: Object,
+					value: function () {
+						return {}
+					}
+				},
+				/**
+				 * Array of users
+				 *
+				 * @type Array<String>
+				 */
+				_users: {
+					type: Array,
+					computed: '_extractUsers(script)'
+				}
+			},
 
-      properties: {
-        /**
-         * Name of the chat
-         */
-        chatName: {
-          type: String,
-          value: 'virtual-chat',
-        },
-        /**
-         * Conversation to configure component.
-         *
-         * @type {{user: Array<{message: String, time: Number}>}}
-         */
-        script:{
-          type: Object,
-          value: function (){
-            return {}
-          }
-        },
-        /**
-         * Array of users
-         *
-         * @type Array<String>
-         */
-        users:{
-          type: Array,
-          computed: '_extractUsers(script)'
-        }
-      },
+			_extractUsers: function (script) {
+				return Object.keys(script);
+			}
+		});
 
-    });
-  </script>
+	</script>
 </dom-module>
