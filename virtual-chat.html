@@ -4,7 +4,7 @@
 <link rel="import" href="../paper-item/paper-item.html">
 <!--
 `virtual-chat`
-Chat component that simulates several people is talking
+Chat component that simulates people is talking
 
 @demo demo/index.html 
 -->
@@ -17,6 +17,25 @@ Chat component that simulates several people is talking
 			
 			.flexchild {
 				@apply(--layout-flex);
+			}
+			
+			:host {
+				--paper-listbox: {
+					border-right: 1px solid black;
+					overflow-y: auto;
+					height: 100px;
+					padding: 0px;
+				}
+			}
+			
+			#chat {
+				padding: 10px;
+				overflow-y: auto;
+			}
+			
+			.container {
+				height: 100px;
+				border: 1px solid black;
 			}
 
 		</style>
@@ -32,7 +51,7 @@ Chat component that simulates several people is talking
 				</paper-listbox>
 			</div>
 			<div class="flexchild" id="chat"></div>
-			<div>three</div>
+			<!--<div>three</div>-->
 		</div>
 	</template>
 	<script>
@@ -43,12 +62,21 @@ Chat component that simulates several people is talking
 			properties: {
 
 				/**
-				 * Words per minute, to calculate time between posts
+				 * Typed words per minute, to calculate time between posts
 				 */
-				WPM: {
+				TWPM: {
 					type: Number,
 					readOnly: true,
 					value: 41
+				},
+
+				/**
+				 * Read words per minute, to calculate time between posts
+				 */
+				RWPM: {
+					type: Number,
+					readOnly: true,
+					value: 250
 				},
 
 				/**
@@ -60,12 +88,12 @@ Chat component that simulates several people is talking
 				/**
 				 * Conversation to configure component.
 				 *
-				 * @type Array<{user: String, message: String}>
+				 * @type {Array<{user: String, message: String}>}
 				 */
 				script: {
-					type: Object,
+					type: Array,
 					value: function () {
-						return {}
+						return []
 					},
 					observer: '_handleScript'
 				},
@@ -75,33 +103,52 @@ Chat component that simulates several people is talking
 				 * @type Array<String>
 				 */
 				_users: {
-					type: Array
+					type: Array,
+					value: function () {
+						return [];
+					}
+				},
+
+				/**
+				 * Current time on the conversation
+				 */
+				_overallProgress: {
+					type: Number,
+					value: 0
 				}
 			},
 
 			_feedChat: function (user, message) {
-				var chatDiv;
-				var p;
+				var post;
 				var words;
-				var seconds;
+				var secondsTyping;
+				var timeToPost;
+				var that = this;
 
-				if (this._users.indexOf(user) === -1) {
-					this.push('_users', user);
-				}
-
-				chatDiv = this.$.chat;
-				p = document.createElement('p');
-				p.innerHTML += '<b>' + user + ':</b>'
+				post = document.createElement('p');
+				post.innerHTML += '<b>' + user + ':</b>' + message;
 
 				words = message.split(' ').length;
-				seconds = (words / this.WPM) * 60; // seconds typing
+				secondsTyping = Math.floor((words / this.TWPM) * 60);
+				secondsReading = Math.floor((words / this.RWPM) * 60);
 
-				// Set timers taking in account accumulated time
+				timeToPost = this._overallProgress + secondsTyping + secondsReading;
+				this.set('_overallProgress', timeToPost);
+
+				this.async(function printPost() {
+					if (this._users.indexOf(user) === -1) {
+						this.push('_users', user);
+					}
+					this.$.chat.append(post);
+					this.$.chat.scrollTop = this.$.chat.scrollHeight;
+				}, timeToPost * 1000);
+
 			},
 
 			_handleScript: function (script) {
-				script.forEach(function lineHandler(user, message) {
-					this._feedChat(user, message);
+				var that = this;
+				script.forEach(function lineHandler(line) {
+					that._feedChat(line.user, line.message);
 				})
 			}
 		});
