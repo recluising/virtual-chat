@@ -31,7 +31,7 @@ Chat component that simulates several people is talking
 					</template>
 				</paper-listbox>
 			</div>
-			<div class="flexchild">two (flex)</div>
+			<div class="flexchild" id="chat"></div>
 			<div>three</div>
 		</div>
 	</template>
@@ -41,6 +41,16 @@ Chat component that simulates several people is talking
 			is: 'virtual-chat',
 
 			properties: {
+
+				/**
+				 * Words per minute, to calculate time between posts
+				 */
+				WPM: {
+					type: Number,
+					readOnly: true,
+					value: 41
+				},
+
 				/**
 				 * Name of the chat
 				 */
@@ -50,13 +60,14 @@ Chat component that simulates several people is talking
 				/**
 				 * Conversation to configure component.
 				 *
-				 * @type {{user: Array<{message: String, time: Number}>}}
+				 * @type Array<{user: String, message: String}>
 				 */
 				script: {
 					type: Object,
 					value: function () {
 						return {}
-					}
+					},
+					observer: '_handleScript'
 				},
 				/**
 				 * Array of users
@@ -64,13 +75,34 @@ Chat component that simulates several people is talking
 				 * @type Array<String>
 				 */
 				_users: {
-					type: Array,
-					computed: '_extractUsers(script)'
+					type: Array
 				}
 			},
 
-			_extractUsers: function (script) {
-				return Object.keys(script);
+			_feedChat: function (user, message) {
+				var chatDiv;
+				var p;
+				var words;
+				var seconds;
+
+				if (this._users.indexOf(user) === -1) {
+					this.push('_users', user);
+				}
+
+				chatDiv = this.$.chat;
+				p = document.createElement('p');
+				p.innerHTML += '<b>' + user + ':</b>'
+
+				words = message.split(' ').length;
+				seconds = (words / this.WPM) * 60; // seconds typing
+
+				// Set timers taking in account accumulated time
+			},
+
+			_handleScript: function (script) {
+				script.forEach(function lineHandler(user, message) {
+					this._feedChat(user, message);
+				})
 			}
 		});
 

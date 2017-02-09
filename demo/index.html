@@ -20,11 +20,19 @@
 <script>
 	window.addEventListener('WebComponentsReady', function (e) {
 		var template = document.getElementById('t');
-		var script = {
-			'Hamlet': {},
-			'Ophelia': {},
-			'King Claudius': {}
-		};
+		var script = [{
+				user: 'Hamlet',
+				message: 'speaking hamlet'
+			},
+			{
+				user: 'Ophelia',
+				message: 'speaking ophelia'
+			},
+			{
+				user: 'King Claudius',
+				message: 'speaking king claudius'
+			}
+		];
 
 		template.script = script;
 	});
