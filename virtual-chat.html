@@ -9,147 +9,147 @@ Chat component that simulates people is talking
 @demo demo/index.html 
 -->
 <dom-module id="virtual-chat">
-	<template>
-		<style is="custom-style">
-			.flex-horizontal {
-				@apply(--layout-horizontal);
-			}
-			
-			.flexchild {
-				@apply(--layout-flex);
-			}
-			
-			:host {
-				--paper-listbox: {
-					border-right: 1px solid black;
-					overflow-y: auto;
-					height: 400px;
-					padding: 0px;
-				}
-			}
-			
-			#chat {
-				padding: 10px;
-				overflow-y: auto;
-			}
-			
-			.container {
-				height: 400px;
-				border: 1px solid black;
-			}
-		</style>
-		<header>
-			<h2>[[name]]</h2>
-		</header>
-		<div class="container flex-horizontal">
-			<div>
-				<paper-listbox>
-					<template is="dom-repeat" items="[[_users]]" as="user">
-						<paper-item>[[user]]</paper-item>
-					</template>
-				</paper-listbox>
-			</div>
-			<div class="flexchild" id="chat"></div>
-			<!--<div>three</div>-->
-		</div>
-	</template>
-	<script>
-		Polymer({
+  <template>
+    <style is="custom-style">
+      .flex-horizontal {
+        @apply(--layout-horizontal);
+      }
+      
+      .flexchild {
+        @apply(--layout-flex);
+      }
+      
+      :host {
+        --paper-listbox: {
+          border-right: 1px solid black;
+          overflow-y: auto;
+          height: 400px;
+          padding: 0px;
+        }
+      }
+      
+      #chat {
+        padding: 10px;
+        overflow-y: auto;
+      }
+      
+      .container {
+        height: 400px;
+        border: 1px solid black;
+      }
+    </style>
+    <header>
+      <h2>[[name]]</h2>
+    </header>
+    <div class="container flex-horizontal">
+      <div>
+        <paper-listbox>
+          <template is="dom-repeat" items="[[_users]]" as="user">
+            <paper-item>[[user]]</paper-item>
+          </template>
+        </paper-listbox>
+      </div>
+      <div class="flexchild" id="chat"></div>
+      <!--<div>three</div>-->
+    </div>
+  </template>
+  <script>
+    Polymer({
 
-			is: 'virtual-chat',
+      is: 'virtual-chat',
 
-			properties: {
+      properties: {
 
-				/**
-				 * Typed words per minute, to calculate time between posts
-				 */
-				TWPM: {
-					type: Number,
-					readOnly: true,
-					value: 41
-				},
+        /**
+         * Typed words per minute, to calculate time between posts
+         */
+        TWPM: {
+          type: Number,
+          readOnly: true,
+          value: 41
+        },
 
-				/**
-				 * Read words per minute, to calculate time between posts
-				 */
-				RWPM: {
-					type: Number,
-					readOnly: true,
-					value: 250
-				},
+        /**
+         * Read words per minute, to calculate time between posts
+         */
+        RWPM: {
+          type: Number,
+          readOnly: true,
+          value: 250
+        },
 
-				/**
-				 * Name of the chat
-				 */
-				name: {
-					type: String
-				},
-				/**
-				 * Conversation to configure component.
-				 *
-				 * @type {Array<{user: String, message: String}>}
-				 */
-				script: {
-					type: Array,
-					value: function () {
-						return []
-					},
-					observer: '_handleScript'
-				},
-				/**
-				 * Array of users
-				 *
-				 * @type Array<String>
-				 */
-				_users: {
-					type: Array,
-					value: function () {
-						return [];
-					}
-				},
+        /**
+         * Name of the chat
+         */
+        name: {
+          type: String
+        },
+        /**
+         * Conversation to configure component.
+         *
+         * @type {Array<{user: String, message: String}>}
+         */
+        script: {
+          type: Array,
+          value: function () {
+            return []
+          },
+          observer: '_handleScript'
+        },
+        /**
+         * Array of users
+         *
+         * @type Array<String>
+         */
+        _users: {
+          type: Array,
+          value: function () {
+            return [];
+          }
+        },
 
-				/**
-				 * Current time on the conversation
-				 */
-				_overallProgress: {
-					type: Number,
-					value: 0
-				}
-			},
+        /**
+         * Current time on the conversation
+         */
+        _overallProgress: {
+          type: Number,
+          value: 0
+        }
+      },
 
-			_feedChat: function (user, message) {
-				var post;
-				var words;
-				var secondsTyping;
-				var timeToPost;
-				var that = this;
+      _feedChat: function (user, message) {
+        var post;
+        var words;
+        var secondsTyping;
+        var timeToPost;
+        var that = this;
 
-				post = document.createElement('p');
-				post.innerHTML += '<b>' + user + ':</b>' + message;
+        post = document.createElement('p');
+        post.innerHTML += '<b>' + user + ':</b>' + message;
 
-				words = message.split(' ').length;
-				secondsTyping = Math.floor((words / this.TWPM) * 60);
-				secondsReading = Math.floor((words / this.RWPM) * 60);
+        words = message.split(' ').length;
+        secondsTyping = Math.floor((words / this.TWPM) * 60);
+        secondsReading = Math.floor((words / this.RWPM) * 60);
 
-				timeToPost = this._overallProgress + secondsTyping;
-				this.set('_overallProgress', timeToPost + secondsReading);
+        timeToPost = this._overallProgress + secondsTyping;
+        this.set('_overallProgress', timeToPost + secondsReading);
 
-				this.async(function printPost() {
-					if (this._users.indexOf(user) === -1) {
-						this.push('_users', user);
-					}
-					this.$.chat.append(post);
-					this.$.chat.scrollTop = this.$.chat.scrollHeight;
-				}, timeToPost * 1000);
+        this.async(function printPost() {
+          if (this._users.indexOf(user) === -1) {
+            this.push('_users', user);
+          }
+          this.$.chat.append(post);
+          this.$.chat.scrollTop = this.$.chat.scrollHeight;
+        }, timeToPost * 1000);
 
-			},
+      },
 
-			_handleScript: function (script) {
-				var that = this;
-				script.forEach(function lineHandler(line) {
-					that._feedChat(line.user, line.message);
-				})
-			}
-		});
-	</script>
+      _handleScript: function (script) {
+        var that = this;
+        script.forEach(function lineHandler(line) {
+          that._feedChat(line.user, line.message);
+        })
+      }
+    });
+  </script>
 </dom-module>
