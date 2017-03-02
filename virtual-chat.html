@@ -14,12 +14,12 @@ Chat component that simulates people is talking
       .flex-horizontal {
         @apply(--layout-horizontal);
       }
-      
+
       .flexchild {
         @apply(--layout-flex);
       }
-      
-      :host {
+
+       :host {
         --paper-listbox: {
           border-right: 1px solid black;
           overflow-y: auto;
@@ -66,7 +66,7 @@ Chat component that simulates people is talking
         TWPM: {
           type: Number,
           readOnly: true,
-          value: 41
+          value: 50
         },
 
         /**
@@ -75,7 +75,7 @@ Chat component that simulates people is talking
         RWPM: {
           type: Number,
           readOnly: true,
-          value: 250
+          value: 280
         },
 
         /**
@@ -117,6 +117,26 @@ Chat component that simulates people is talking
         }
       },
 
+      /**
+       * Set post to be launched to chat.
+       * @param {Number} timeToPost needed time to post the message
+       * @param {String} post The message to post
+       */
+      _scheduleMessages: function (timeToPost, post, user) {
+        this.async(function printPost() {
+          if (this._users.indexOf(user) === -1) {
+            this.push('_users', user);
+          }
+          this.$.chat.append(post);
+          this.$.chat.scrollTop = this.$.chat.scrollHeight;
+        }, timeToPost * 1000);
+      },
+
+      /**
+       * Feed the chat with a message by an user
+       * @param {String} user Author of the post
+       * @param {String} message The message to post
+       */
       _feedChat: function (user, message) {
         var post;
         var words;
@@ -134,14 +154,7 @@ Chat component that simulates people is talking
         timeToPost = this._overallProgress + secondsTyping;
         this.set('_overallProgress', timeToPost + secondsReading);
 
-        this.async(function printPost() {
-          if (this._users.indexOf(user) === -1) {
-            this.push('_users', user);
-          }
-          this.$.chat.append(post);
-          this.$.chat.scrollTop = this.$.chat.scrollHeight;
-        }, timeToPost * 1000);
-
+        this._scheduleMessages(timeToPost, post, user);
       },
 
       _handleScript: function (script) {
