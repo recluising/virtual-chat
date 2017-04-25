@@ -1,43 +1,48 @@
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
+
 <!--
 `virtual-chat`
 Chat component that simulates people is talking
 
 @demo demo/index.html 
 -->
+
 <dom-module id="virtual-chat">
   <template>
-    <style is="custom-style">
-      .flex-horizontal {
-        @apply(--layout-horizontal);
-      }
-
-      .flexchild {
-        @apply(--layout-flex);
-      }
-
-       :host {
-        --paper-listbox: {
-          border-right: 1px solid black;
-          overflow-y: auto;
-          height: 400px;
-          padding: 0px;
+    <custom-style>
+      <style is="custom-style">
+        .flex-horizontal {
+          @apply --layout-horizontal;
         }
-      }
-      
-      #chat {
-        padding: 10px;
-        overflow-y: auto;
-      }
-      
-      .container {
-        height: 400px;
-        border: 1px solid black;
-      }
-    </style>
+        
+        .flexchild {
+          @apply --layout-flex;
+        }
+        
+         :host {
+          --paper-listbox: {
+            border-right: 1px solid black;
+            overflow-y: auto;
+            height: 400px;
+            padding: 0px;
+          }
+        }
+        
+        #chat {
+          padding: 10px;
+          overflow-y: auto;
+        }
+        
+        .container {
+          height: 400px;
+          border: 1px solid black;
+        }
+      </style>
+    </custom-style>
     <header>
       <h2>[[name]]</h2>
     </header>
@@ -53,99 +58,139 @@ Chat component that simulates people is talking
       <!--<div>three</div>-->
     </div>
   </template>
+
   <script>
-    Polymer({
+    /** @polymerElement */
+    class VirtualChat extends Polymer.Element {
 
-      is: 'virtual-chat',
+      static get is() { return 'virtual-chat'; }
 
-      properties: {
-
-        /**
-         * Typed words per minute, to calculate time between posts
-         */
-        TWPM: {
-          type: Number,
-          readOnly: true,
-          value: 50
-        },
-
-        /**
-         * Read words per minute, to calculate time between posts
-         */
-        RWPM: {
-          type: Number,
-          readOnly: true,
-          value: 280
-        },
-
-        /**
-         * Name of the chat
-         */
-        name: {
-          type: String
-        },
-        /**
-         * Conversation to configure component.
-         *
-         * @type {Array<{user: String, message: String}>}
-         */
-        script: {
-          type: Array,
-          value: function () {
-            return []
+      static get properties() {
+        return {
+          /**
+          * Typed words per minute, to calculate time between posts
+          */
+          TWPM: {
+            type: Number,
+            readOnly: true,
+            value: 50
           },
-          observer: '_handleScript'
-        },
-        /**
-         * Array of users
-         *
-         * @type Array<String>
-         */
-        _users: {
-          type: Array,
-          value: function () {
-            return [];
-          }
-        },
 
-        /**
-         * Current time on the conversation
-         */
-        _overallProgress: {
-          type: Number,
-          value: 0
+          /**
+          * Read words per minute, to calculate time between posts
+          */
+          RWPM: {
+            type: Number,
+            readOnly: true,
+            value: 280
+          },
+
+          /**
+          * Name of the chat
+          */
+          name: {
+            type: String
+          },
+          /**
+          * Conversation to configure component.
+          *
+          * @type {Array<{user: String, message: String}>}
+          */
+          script: {
+            type: Array,
+            value: function () {
+              return []
+            },
+            observer: '_handleScript'
+          },
+          /**
+          * Array of users
+          *
+          * @type Array<String>
+          */
+          _users: {
+            type: Array,
+            value: function () {
+              return [];
+            }
+          },
+
+          /**
+          * Current time on the conversation
+          */
+          _overallProgress: {
+            type: Number,
+            value: 0
+          },
+
+          /**
+          * Array of pending messages for deleting if cleared chat
+          */
+          _pendingMessages: {
+            type: Array,
+            value: () => { return [] }
+          }
+        };
+      }
+
+      /**
+       * Reset chat
+       */
+      reset() {
+        this.clear();
+
+        // Makes the chat play again
+        this._handleScript(this.script);
+      }
+
+      /**
+       * Clear the chat screen and the future messages, it does not begin again
+       */
+      clear() {
+        this.$.chat.innerHTML = '';
+        for (let printFunction of this._pendingMessages) {
+          clearTimeout(printFunction);
         }
-      },
+        this._pendingMessages = [];
+        this._users = [];
+        this._overallProgress = 0;
+      }
 
       /**
        * Set post to be launched to chat.
        * @param {Number} timeToPost needed time to post the message
        * @param {String} post The message to post
        */
-      _scheduleMessages: function (timeToPost, post, user) {
-        this.async(function printPost() {
+      _scheduleMessages(timeToPost, post, user) {
+        let printFunction = () => {
           if (this._users.indexOf(user) === -1) {
             this.push('_users', user);
           }
           this.$.chat.append(post);
           this.$.chat.scrollTop = this.$.chat.scrollHeight;
-        }, timeToPost * 1000);
-      },
+
+          // Deleting from _pendingMessages array
+          this._pendingMessages.shift();
+        }
+
+        this._pendingMessages.push(setTimeout(printFunction.bind(this), timeToPost * 1000));
+      }
 
       /**
        * Feed the chat with a message by an user
        * @param {String} user Author of the post
        * @param {String} message The message to post
        */
-      _feedChat: function (user, message) {
-        var post;
-        var words;
-        var secondsTyping;
-        var timeToPost;
-        var that = this;
+      _feedChat(user, message) {
+        let post;
+        let words;
+        let secondsTyping;
+        let secondsReading;
+        let timeToPost;
+        let that = this;
 
         post = document.createElement('p');
-        post.innerHTML += '<b>' + user + ':</b>' + message;
+        post.innerHTML += `<b> ${user} :</b> ${message}`;
 
         words = message.split(' ').length;
         secondsTyping = Math.floor((words / this.TWPM) * 60);
@@ -155,14 +200,17 @@ Chat component that simulates people is talking
         this.set('_overallProgress', timeToPost + secondsReading);
 
         this._scheduleMessages(timeToPost, post, user);
-      },
-
-      _handleScript: function (script) {
-        var that = this;
-        script.forEach(function lineHandler(line) {
-          that._feedChat(line.user, line.message);
-        })
       }
-    });
+
+      _handleScript(script) {
+        let lineHandler = (line) => {
+          this._feedChat(line.user, line.message);
+        };
+        if (script) {
+          script.forEach(lineHandler.bind(this));
+        }
+      }
+    };
+    window.customElements.define(VirtualChat.is, VirtualChat);
   </script>
 </dom-module>
