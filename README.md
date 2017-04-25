@@ -1,5 +1,6 @@
-# \<lala-element\>
+# \<virtual-chat\>
 
+Work in progress
 
 
 ## Install the Polymer-CLI
