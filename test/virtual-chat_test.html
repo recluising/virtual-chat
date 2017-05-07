@@ -1,31 +1,131 @@
 <!doctype html>
 
 <html>
-  <head>
-    <title>iron-flex-layout-classes tests</title>
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+<head>
+  <title>iron-flex-layout-classes tests</title>
 
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <script src="../../web-component-tester/browser.js"></script>
-    
-    <link rel="import" href="../virtual-chat.html">
-  </head>
-  <body>
-    <test-fixture id="basic">
-      <template>
-        <virtual-chat></virtual-chat>
-      </template>
-    </test-fixture>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
 
-    <script>
-      suite('virtual-chat', function() {
-        test('instantiating the element works', function() {
-          assert(true); //
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="mockScript.js"></script>
+
+  <link rel="import" href="../virtual-chat.html">
+</head>
+
+<body>
+  <test-fixture id="basic">
+    <template>
+      <virtual-chat></virtual-chat>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="loaded">
+    <template>
+      <virtual-chat></virtual-chat>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="testSchedule">
+    <template>
+      <virtual-chat></virtual-chat>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('virtual-chat', function () {
+      let basic;
+      let loaded;
+      let testSchedule;
+
+      setup(() => {
+        basic = fixture('basic');
+        loaded = fixture('loaded');
+        loaded.script = mockHamlet;
+        testSchedule = fixture('testSchedule');
+      });
+      suite('unit tests of public interface', () => {
+        test('default values are OK', () => {
+
+          let defaultsMap = new Map([
+            ['TWPM', 50],
+            ['RWPM', 280],
+            ['name', undefined]
+          ]);
+
+          defaultsMap.forEach((value, key) => {
+            expect(basic[key]).to.be.equal(value);
+          });
+        });
+
+        test('script and _pendingMessages are empty', () => {
+
+          // They are array typed
+          expect(basic.script).to.be.an('array')
+
+          // They are empty
+          expect(basic.script.length).to.be.equal(0);
+        });
+
+        test('reset method work as expected', () => {
+
+          sinon.spy(loaded, 'clear');
+          sinon.spy(loaded, '_handleScript');
+
+          loaded.reset();
+
+          expect(loaded.clear).to.have.been.calledOnce;
+          expect(loaded._handleScript).to.have.been.calledOnce;
+          expect(loaded._handleScript).to.have.been.calledWith(mockHamlet);
+
+          loaded.clear.restore();
+          loaded._handleScript.restore();
+        });
+
+        test('clear function work as expected', (done) => {
+
+          let intervalLimit = 30;
+          let intervalCount = 0;
+
+          let testFunction = () => {
+            let pendingMessagesCount = loaded._pendingMessages.length;
+            sinon.spy(window, 'clearTimeout');
+
+            expect(loaded.$.chat.innerHTML).not.to.be.equal('');
+            expect(pendingMessagesCount).not.to.be.equal(0);
+
+            loaded.clear();
+
+            expect(clearTimeout.callCount).to.be.equal(pendingMessagesCount);
+            expect(loaded.$.chat.innerHTML).to.be.equal('');
+            expect(loaded._pendingMessages.length).to.be.equal(0);
+            expect(loaded._users.length).to.be.equal(0);
+            expect(loaded._overallProgress).to.be.equal(0);
+
+            clearTimeout.restore();
+
+            done();
+          };
+
+          let waitingForContent = setInterval(() => {
+            if (intervalCount >= intervalLimit) {
+              throw Error('timeout exceeded');
+            }
+
+            intervalCount++;
+
+            if (loaded.$.chat.innerHTML !== '') {
+              clearInterval(waitingForContent);
+              testFunction();
+            }
+          }, 100);
         });
       });
-    </script>
-  </body>
+    });
+  </script>
+</body>
+
 </html>

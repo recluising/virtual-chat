@@ -109,7 +109,7 @@ Chat component that simulates people is talking
           */
           _users: {
             type: Array,
-            value: function () {
+            value:  () => {
               return [];
             }
           },
@@ -127,7 +127,9 @@ Chat component that simulates people is talking
           */
           _pendingMessages: {
             type: Array,
-            value: () => { return [] }
+            value: () => { 
+              return [];
+            }
           }
         };
       }
