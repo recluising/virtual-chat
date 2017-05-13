@@ -2,12 +2,13 @@
 <link rel="import" href="../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../paper-item/paper-item.html">
 
 <!--
 `virtual-chat`
 Chat component that simulates people is talking
-
+//TODO: Time to end... timeline :)
 @demo demo/index.html 
 -->
 
@@ -18,11 +19,11 @@ Chat component that simulates people is talking
         .flex-horizontal {
           @apply --layout-horizontal;
         }
-        
+
         .flexchild {
           @apply --layout-flex;
         }
-        
+
          :host {
           --paper-listbox: {
             border-right: 1px solid black;
@@ -31,22 +32,55 @@ Chat component that simulates people is talking
             padding: 0px;
           }
         }
-        
+
         #chat {
           padding: 10px;
           overflow-y: auto;
         }
-        
-        .container {
+
+        .chatContainer {
           height: 400px;
           border: 1px solid black;
+        }
+
+        .flex-horizontal-with-ratios {
+          @apply --layout-horizontal;
+          width: 80%;
+          padding-left: 10%;
+        }
+
+        .flex-horizontal-with-ratios div {
+          height: 30px;
+          display: flex;
+          align-items: center;
+        }
+
+        .flex1child {
+          @apply --layout-flex-1;
+        }
+
+        .flex8child {
+          @apply --layout-flex-8;
+        }
+
+        #progress {
+          width: 90%;
+          padding-left: 5%;
         }
       </style>
     </custom-style>
     <header>
       <h2>[[name]]</h2>
     </header>
-    <div class="container flex-horizontal">
+
+    <div class="container flex-horizontal-with-ratios">
+      <div class="flex1child">[[_currentTime]]</div>
+      <div class="flex8child">
+        <paper-progress id="progress" value="[[_progressRatio]]"></paper-progress>
+      </div>
+      <div class="flex1child">[[_timeToEnd]]</div>
+    </div>
+    <div class="chatContainer flex-horizontal">
       <div>
         <paper-listbox>
           <template is="dom-repeat" items="[[_users]]" as="user">
@@ -109,17 +143,55 @@ Chat component that simulates people is talking
           */
           _users: {
             type: Array,
-            value:  () => {
+            value: () => {
               return [];
             }
           },
 
+          _progressRatio: {
+            computed: '_calculateProgressRatio(_totalProgressTime,_currentProgressTime)',
+            value: 0
+          },
+
+          _timeToEnd: {
+            computed: '_formatToHours(_totalProgressTime)'
+          },
+
+          _currentTime: {
+            computed: '_formatToHours(_currentProgressTime)'
+          },
+
           /**
-          * Current time on the conversation
+          * Counter for the time on the conversation (seconds)
           */
-          _overallProgress: {
+          _totalProgressTimeCounter: {
             type: Number,
             value: 0
+          },
+
+          /**
+          * Time on the conversation (seconds)
+          */
+          _totalProgressTime: {
+            type: Number,
+            value: 0,
+            notify: true
+          },
+
+          /**
+          * Timer for updating the current conversation time
+          */
+          _timer: {
+            type: Number
+          },
+
+          /**
+          * Current time of conversation (seconds)
+          */
+          _currentProgressTime: {
+            type: Number,
+            value: 0,
+            notify: true
           },
 
           /**
@@ -127,11 +199,15 @@ Chat component that simulates people is talking
           */
           _pendingMessages: {
             type: Array,
-            value: () => { 
+            value: () => {
               return [];
             }
           }
         };
+      }
+
+      _formatToHours(seconds) {
+        return new Date(seconds * 1000).toISOString().substr(11, 8);
       }
 
       /**
@@ -144,17 +220,34 @@ Chat component that simulates people is talking
         this._handleScript(this.script);
       }
 
+      _calculateProgressRatio(_totalProgressTime, _currentProgressTime) {
+        let progress = 0;
+        if (_currentProgressTime !== 0 && _totalProgressTime !== 0) {
+          progress = _currentProgressTime / _totalProgressTime;
+        }
+
+        return progress * 100;
+      }
+
       /**
        * Clear the chat screen and the future messages, it does not begin again
        */
       clear() {
+        // Chat cleaning
         this.$.chat.innerHTML = '';
+        this._users = [];
+
+        // Messages cleaning
         for (let printFunction of this._pendingMessages) {
           clearTimeout(printFunction);
         }
         this._pendingMessages = [];
-        this._users = [];
-        this._overallProgress = 0;
+
+        // Progress cleaning
+        clearTimeout(this._timer);
+        this._totalProgressTimeCounter = 0;
+        this._totalProgressTime = 0;
+        this._currentProgressTime = 0;
       }
 
       /**
@@ -197,8 +290,8 @@ Chat component that simulates people is talking
         secondsTyping = Math.floor((words / this.TWPM) * 60);
         secondsReading = Math.floor((words / this.RWPM) * 60);
 
-        timeToPost = this._overallProgress + secondsTyping;
-        this.set('_overallProgress', timeToPost + secondsReading);
+        timeToPost = this._totalProgressTimeCounter + secondsTyping;
+        this._totalProgressTimeCounter = timeToPost + secondsReading;
 
         this._scheduleMessages(timeToPost, post, user);
       }
@@ -209,7 +302,17 @@ Chat component that simulates people is talking
         };
         if (script) {
           script.forEach(lineHandler.bind(this));
+          this._totalProgressTime = this._totalProgressTimeCounter;
+          this._initTimer();
         }
+      }
+
+      _initTimer() {
+        let timeUpdater = () => {
+          this._currentProgressTime += 1;
+        };
+
+        this._timer = setInterval(timeUpdater.bind(this), 1000);
       }
     };
     window.customElements.define(VirtualChat.is, VirtualChat);

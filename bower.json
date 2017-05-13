@@ -6,7 +6,8 @@
     "polymer": "Polymer/polymer#^2.0.0-rc.2",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#2.0-preview",
     "paper-listbox": "PolymerElements/paper-listbox#2.0-preview",
-    "paper-item": "PolymerElements/paper-item#2.0-preview"
+    "paper-item": "PolymerElements/paper-item#2.0-preview",
+    "paper-progress": "PolymerElements/paper-progress#2.0-preview"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#2.0-preview",

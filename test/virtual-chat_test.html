@@ -29,23 +29,15 @@
     </template>
   </test-fixture>
 
-  <test-fixture id="testSchedule">
-    <template>
-      <virtual-chat></virtual-chat>
-    </template>
-  </test-fixture>
-
   <script>
     suite('virtual-chat', function () {
       let basic;
       let loaded;
-      let testSchedule;
 
       setup(() => {
         basic = fixture('basic');
         loaded = fixture('loaded');
         loaded.script = mockHamlet;
-        testSchedule = fixture('testSchedule');
       });
       suite('unit tests of public interface', () => {
         test('default values are OK', () => {
@@ -61,7 +53,7 @@
           });
         });
 
-        test('script and _pendingMessages are empty', () => {
+        test('script is empty', () => {
 
           // They are array typed
           expect(basic.script).to.be.an('array')
@@ -73,16 +65,12 @@
         test('reset method work as expected', () => {
 
           sinon.spy(loaded, 'clear');
-          sinon.spy(loaded, '_handleScript');
 
           loaded.reset();
 
           expect(loaded.clear).to.have.been.calledOnce;
-          expect(loaded._handleScript).to.have.been.calledOnce;
-          expect(loaded._handleScript).to.have.been.calledWith(mockHamlet);
 
           loaded.clear.restore();
-          loaded._handleScript.restore();
         });
 
         test('clear function work as expected', (done) => {
@@ -91,7 +79,7 @@
           let intervalCount = 0;
 
           let testFunction = () => {
-            let pendingMessagesCount = loaded._pendingMessages.length;
+            let pendingMessagesCount = loaded._pendingMessages.length + 1; // +1 due to clearing _timer inteval also
             sinon.spy(window, 'clearTimeout');
 
             expect(loaded.$.chat.innerHTML).not.to.be.equal('');
@@ -101,9 +89,6 @@
 
             expect(clearTimeout.callCount).to.be.equal(pendingMessagesCount);
             expect(loaded.$.chat.innerHTML).to.be.equal('');
-            expect(loaded._pendingMessages.length).to.be.equal(0);
-            expect(loaded._users.length).to.be.equal(0);
-            expect(loaded._overallProgress).to.be.equal(0);
 
             clearTimeout.restore();
 
@@ -122,6 +107,18 @@
               testFunction();
             }
           }, 100);
+        });
+      });
+      suite('Integration tests', () => {
+        suite('On an initialized chat', () => {
+          test('Reset button works fine', () => {
+          });
+          test('Clear button works fine', () => {
+          });
+        });
+        test('On a chat that is not running', () => {
+          test('it runs when some script is loaded', () => {
+          });
         });
       });
     });
