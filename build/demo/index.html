@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+  <title>virtual-chat demo</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="hamletActI.js"></script>
+
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../polymer/lib/elements/dom-bind.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-toast/paper-toast.html">
+  <link rel="import" href="../virtual-chat.html">
+
+  <style is="custom-style" include="demo-pages-shared-styles">
+
+  </style>
+</head>
+
+<body>
+  <div class="vertical-section-container centered">
+    <h3>Basic virtual-chat demo</h3>
+    <demo-snippet>
+      <template>
+        <dom-bind id="context">
+          <template>
+            <paper-button on-click="_clear">Clear</paper-button>
+            <paper-button on-click="_reset">Reset</paper-button>
+            <virtual-chat id="virtualChat" script="[[script]]" name="Hamlet, ACT I only"></virtual-chat>
+            <paper-toast opened="{{openedToast}}" text="[[text]]"></paper-toast>
+          </template>
+        </dom-bind>
+      </template>
+    </demo-snippet>
+
+    <demo-snippet>
+      <template>
+        <script>
+          let context = document.getElementById('context');
+
+          let _openToast = (calledMethod) => {
+            context.text = `${calledMethod} was called`;
+            context.openedToast = true;
+          }
+
+          // 'hamlet' is an Array containing the Hamlet script, act I.
+          context.script = hamlet;
+
+          // listeners for buttons
+          context._clear = () => {
+            context.$.virtualChat.clear();
+            _openToast('clear');
+          };
+
+          context._reset = () => {
+            context.$.virtualChat.reset();
+            _openToast('reset');
+          };
+        </script>
+      </template>
+    </demo-snippet>
+  </div>
+</body>
+
+</html>
