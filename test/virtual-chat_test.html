@@ -33,11 +33,30 @@
     suite('virtual-chat', function () {
       let basic;
       let loaded;
+      let setIntervalForChat;
 
       setup(() => {
         basic = fixture('basic');
         loaded = fixture('loaded');
         loaded.script = mockHamlet;
+        setIntervalForChat = (element, callback) => {
+          let intervalLimit = 30;
+          let intervalCount = 0;
+
+          let timer = setInterval(() => {
+            if (intervalCount >= intervalLimit) {
+              throw Error('timeout exceeded');
+            }
+
+            intervalCount++;
+
+            if (element.$.chat.innerHTML !== '') {
+              clearInterval(timer);
+              callback();
+            }
+          }, 100);
+        };
+
       });
       suite('unit tests of public interface', () => {
         test('default values are OK', () => {
@@ -62,8 +81,7 @@
           expect(basic.script.length).to.be.equal(0);
         });
 
-        test('reset method work as expected', () => {
-
+        test('reset method work as expected', (done) => {
           sinon.spy(loaded, 'clear');
 
           loaded.reset();
@@ -71,42 +89,24 @@
           expect(loaded.clear).to.have.been.calledOnce;
 
           loaded.clear.restore();
+
+          setIntervalForChat(loaded, done);
         });
 
         test('clear function work as expected', (done) => {
-
-          let intervalLimit = 30;
-          let intervalCount = 0;
-
           let testFunction = () => {
-            let pendingMessagesCount = loaded._pendingMessages.length + 1; // +1 due to clearing _timer inteval also
             sinon.spy(window, 'clearTimeout');
-
+            
             expect(loaded.$.chat.innerHTML).not.to.be.equal('');
-            expect(pendingMessagesCount).not.to.be.equal(0);
 
             loaded.clear();
 
-            expect(clearTimeout.callCount).to.be.equal(pendingMessagesCount);
             expect(loaded.$.chat.innerHTML).to.be.equal('');
 
             clearTimeout.restore();
-
             done();
           };
-
-          let waitingForContent = setInterval(() => {
-            if (intervalCount >= intervalLimit) {
-              throw Error('timeout exceeded');
-            }
-
-            intervalCount++;
-
-            if (loaded.$.chat.innerHTML !== '') {
-              clearInterval(waitingForContent);
-              testFunction();
-            }
-          }, 100);
+          setIntervalForChat(loaded, testFunction);
         });
       });
       suite('Integration tests', () => {

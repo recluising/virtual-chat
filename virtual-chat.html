@@ -124,6 +124,7 @@ Chat component that simulates people is talking
           name: {
             type: String
           },
+
           /**
           * Conversation to configure component.
           *
@@ -136,6 +137,7 @@ Chat component that simulates people is talking
             },
             observer: '_handleScript'
           },
+
           /**
           * Array of users
           *
@@ -148,17 +150,28 @@ Chat component that simulates people is talking
             }
           },
 
+          /**
+          * Value for the progress bar
+          */
           _progressRatio: {
             computed: '_calculateProgressRatio(_totalProgressTime,_currentProgressTime)',
             value: 0
           },
 
+          /**
+          * Time to end formated as hh:mm:ss
+          */
           _timeToEnd: {
-            computed: '_formatToHours(_totalProgressTime)'
+            computed: '_formatToHours(_totalProgressTime)',
+            type: String
           },
 
+          /**
+          * Current time formated as hh:mm:ss
+          */
           _currentTime: {
-            computed: '_formatToHours(_currentProgressTime)'
+            computed: '_formatToHours(_currentProgressTime)',
+            type: String
           },
 
           /**
@@ -206,29 +219,6 @@ Chat component that simulates people is talking
         };
       }
 
-      _formatToHours(seconds) {
-        return new Date(seconds * 1000).toISOString().substr(11, 8);
-      }
-
-      /**
-       * Reset chat
-       */
-      reset() {
-        this.clear();
-
-        // Makes the chat play again
-        this._handleScript(this.script);
-      }
-
-      _calculateProgressRatio(_totalProgressTime, _currentProgressTime) {
-        let progress = 0;
-        if (_currentProgressTime !== 0 && _totalProgressTime !== 0) {
-          progress = _currentProgressTime / _totalProgressTime;
-        }
-
-        return progress * 100;
-      }
-
       /**
        * Clear the chat screen and the future messages, it does not begin again
        */
@@ -248,6 +238,40 @@ Chat component that simulates people is talking
         this._totalProgressTimeCounter = 0;
         this._totalProgressTime = 0;
         this._currentProgressTime = 0;
+      }
+
+      /**
+       * Reset chat
+       */
+      reset() {
+        this.clear();
+
+        // Makes the chat play again
+        this._handleScript(this.script);
+      }
+
+      /**
+       * Format seconds to String for hh:mm:ss
+       * @param {Number} seconds seconds to transform
+       * @return {String} formated string
+       */
+      _formatToHours(seconds) {
+        return new Date(seconds * 1000).toISOString().substr(11, 8);
+      }
+
+      /**
+       * Calculate ratio for progress bar
+       * @param {Number} _totalProgressTime total seconds
+       * @param {Number} _currentProgressTime current seconds
+       * @return {Number} progress %
+       */
+      _calculateProgressRatio(_totalProgressTime, _currentProgressTime) {
+        let progress = 0;
+        if (_currentProgressTime !== 0 && _totalProgressTime !== 0) {
+          progress = _currentProgressTime / _totalProgressTime;
+        }
+
+        return progress * 100;
       }
 
       /**
@@ -296,6 +320,10 @@ Chat component that simulates people is talking
         this._scheduleMessages(timeToPost, post, user);
       }
 
+      /**
+       * Handles script when it is set
+       * @param {Array<{user: String, message: String}>} script Script for feeding the chat
+       */
       _handleScript(script) {
         let lineHandler = (line) => {
           this._feedChat(line.user, line.message);
@@ -307,6 +335,9 @@ Chat component that simulates people is talking
         }
       }
 
+      /**
+       * Inits timer for current time tracking
+       */
       _initTimer() {
         let timeUpdater = () => {
           this._currentProgressTime += 1;
