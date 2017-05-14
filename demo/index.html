@@ -38,32 +38,30 @@
       </template>
     </demo-snippet>
 
-    <demo-snippet>
-      <template>
-        <script>
-          let context = document.getElementById('context');
+    <script>
+      window.addEventListener('WebComponentsReady', () => {
+        let contextDomBind = document.getElementById('context');
 
-          let _openToast = (calledMethod) => {
-            context.text = `${calledMethod} was called`;
-            context.openedToast = true;
-          }
+        let _openToast = (calledMethod) => {
+          contextDomBind.text = `${calledMethod} was called`;
+          contextDomBind.openedToast = true;
+        }
 
-          // 'hamlet' is an Array containing the Hamlet script, act I.
-          context.script = hamlet;
+        // 'hamlet' is an Array containing the Hamlet script, act I.
+        contextDomBind.script = hamlet;
 
-          // listeners for buttons
-          context._clear = () => {
-            context.$.virtualChat.clear();
-            _openToast('clear');
-          };
+        // listeners for buttons
+        contextDomBind._clear = () => {
+          contextDomBind.$.virtualChat.clear();
+          _openToast('clear');
+        };
 
-          context._reset = () => {
-            context.$.virtualChat.reset();
-            _openToast('reset');
-          };
-        </script>
-      </template>
-    </demo-snippet>
+        contextDomBind._reset = () => {
+          contextDomBind.$.virtualChat.reset();
+          _openToast('reset');
+        };
+      });
+    </script>
   </div>
 </body>
 

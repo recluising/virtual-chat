@@ -284,7 +284,7 @@ Chat component that simulates people is talking
           if (this._users.indexOf(user) === -1) {
             this.push('_users', user);
           }
-          this.$.chat.append(post);
+          this.$.chat.appendChild(post);
           this.$.chat.scrollTop = this.$.chat.scrollHeight;
 
           // Deleting from _pendingMessages array
@@ -308,7 +308,7 @@ Chat component that simulates people is talking
         let that = this;
 
         post = document.createElement('p');
-        post.innerHTML += `<b> ${user} :</b> ${message}`;
+        post.innerHTML = `<b> ${user} :</b> ${message}`;
 
         words = message.split(' ').length;
         secondsTyping = Math.floor((words / this.TWPM) * 60);
@@ -328,7 +328,7 @@ Chat component that simulates people is talking
         let lineHandler = (line) => {
           this._feedChat(line.user, line.message);
         };
-        if (script) {
+        if (script && script.length) {
           script.forEach(lineHandler.bind(this));
           this._totalProgressTime = this._totalProgressTimeCounter;
           this._initTimer();
