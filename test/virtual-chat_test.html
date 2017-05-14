@@ -96,7 +96,7 @@
         test('clear function work as expected', (done) => {
           let testFunction = () => {
             sinon.spy(window, 'clearTimeout');
-            
+
             expect(loaded.$.chat.innerHTML).not.to.be.equal('');
 
             loaded.clear();
@@ -109,16 +109,19 @@
           setIntervalForChat(loaded, testFunction);
         });
       });
-      suite('Integration tests', () => {
+      suite('progress bar testing', () => {
         suite('On an initialized chat', () => {
-          test('Reset button works fine', () => {
+          test('After reset progress bar works fine', () => {
           });
-          test('Clear button works fine', () => {
+          test('After clear progress bar works fine', () => {
+          });
+          test('Progres bar is hidden if required by attribute', () => {
           });
         });
-        test('On a chat that is not running', () => {
-          test('it runs when some script is loaded', () => {
-          });
+      });
+
+      suite('On a chat no running', () => {
+        test('It runs when script is set', () => {
         });
       });
     });
